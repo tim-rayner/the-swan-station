@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node --experimental-specifier-resolution=node dist/server.js",
+    "start": "node --import  'data:text/javascript,import { register } from \"node:module\"; import { pathToFileURL } from \"node:url\"; register(\"ts-node/esm\", pathToFileURL(\"./\"));' server.ts",
     "dev": "nodemon --exec node --loader ts-node/esm -r tsconfig-paths/register server.ts"
   },
   "keywords": [],
@@ -24,8 +24,13 @@
     "typescript": "^5.6.3"
   },
   "dependencies": {
+    "@types/mongoose": "^5.11.97",
+    "colors": "^1.4.0",
     "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
     "express": "^4.21.1",
+    "express-async-handler": "^1.2.0",
+    "mongoose": "^8.7.1",
     "socket.io": "^4.8.0"
   }
 }

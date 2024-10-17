@@ -1,10 +1,24 @@
+import "colors";
 import express from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
+import dotenv from "dotenv";
+import connectDB from "./db.js";
 
+//Route imports
+import countdownRouter from "./routes/countdown.js";
+
+//Configuration
+dotenv.config();
+connectDB();
+
+const PORT = process.env.PORT || 5000;
 const app = express();
 
+//Add middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: false }));
 app.use(
   cors({
     origin: "*",
@@ -19,12 +33,14 @@ const io: Server = new Server(server, {
   },
 });
 
-const PORT = process.env.PORT || 5000;
+//Add routes
+app.use("/api/countdown", countdownRouter);
 
 server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+//Socket listeners
 io.on("connection", (socket: Socket) => {
   console.log("New user connected");
 
