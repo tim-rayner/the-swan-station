@@ -10,6 +10,7 @@ function App() {
   const [messages, setMessages] = useState<iMessage[]>([]);
   const [messageText, setMessageText] = useState("");
   const [timer, setTimer] = useState<ICountdown | null>(null);
+  const [minsRemaining, setMinsRemaining] = useState<number | null>(null);
 
   useEffect(() => {
     socket.on("message", (message) => {
@@ -45,7 +46,7 @@ function App() {
       ...timerData,
       startTime: startTime,
     });
-
+    setMinsRemaining(Math.floor(secondsRemaining / 60));
     console.log(`Time remaining: ${secondsRemaining} seconds`);
   }
 
@@ -65,15 +66,24 @@ function App() {
     }
 
     const timer = await response.json();
+    setMinsRemaining(108);
     console.log("updated Timer", timer);
   }
+
+  //temp makeshift count down 1 min and update minsRemaining
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setMinsRemaining((prevMins) => (prevMins ? prevMins - 1 : null));
+    }, 60000);
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <div className="App">
       <h1>The Swan Station</h1>
       <h3> Country Code: []</h3>
       <h3> Location: The Island</h3>
-      <h3> Timer:</h3>
+      <h3> Timer: {minsRemaining} minutes</h3>
       <div className="messages">
         {messages.map((message, index) => (
           <Message
