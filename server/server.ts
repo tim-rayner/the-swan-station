@@ -1,9 +1,9 @@
-import express, { Application } from "express";
+import express from "express";
 import { createServer } from "http";
 import { Server, Socket } from "socket.io";
 import cors from "cors";
 
-const app: Application = express();
+const app = express();
 
 app.use(
   cors({
@@ -12,10 +12,17 @@ app.use(
 );
 
 const server = createServer(app);
+
 const io: Server = new Server(server, {
   cors: {
     origin: "*",
   },
+});
+
+const PORT = process.env.PORT || 5000;
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
 
 io.on("connection", (socket: Socket) => {
@@ -28,10 +35,4 @@ io.on("connection", (socket: Socket) => {
   socket.on("disconnect", () => {
     console.log("User disconnected");
   });
-});
-
-const PORT: number = process.env.PORT ? parseInt(process.env.PORT) : 5001;
-
-server.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
 });
