@@ -8,10 +8,7 @@ import connectDB from "./db.js";
 
 //Route imports
 import countdownRouter from "./routes/countdown.js";
-
-//Configuration
-dotenv.config();
-connectDB();
+import { startCountdownService } from "./services/startCountdownService.js";
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -40,9 +37,21 @@ server.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
 
+//entry
+dotenv.config();
+connectDB();
+
+//Start the countdown timer
+const timer = await startCountdownService();
+
+if (timer.incidentOccurred) {
+  io.emit("incident", timer);
+}
+
 //Socket listeners
 io.on("connection", (socket: Socket) => {
   console.log("New user connected");
+  io.emit("initTimer", timer);
 
   socket.on("sendMessage", (message: string) => {
     io.emit("message", message); // Broadcast the message to all connected clients

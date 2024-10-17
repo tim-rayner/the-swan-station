@@ -19,22 +19,23 @@ const getCountdown = asyncHandler(async (req, res) => {
 // @desc Reset the countdown and log the event
 const resetCountdown = asyncHandler(async (req, res) => {
   try {
-    const { user, timer } = req.body;
-
-    if (!user || !timer) {
-      res.status(400);
-      throw new Error("User and timer are required");
-    }
+    const { user, resetTime } = req.body;
 
     const countdown = await CountdownModel.findOne();
+
     if (!countdown) {
       res.status(404);
       throw new Error("No countdown state found");
     }
 
-    countdown!.timer = timer;
-    countdown!.resetLogs.push({ resetTime: new Date(), user });
-    await countdown!.save();
+    countdown.resetLogs.push({ resetTime, user });
+    countdown.currentTime = 6480;
+    countdown.startTime = new Date();
+    countdown.isRunning = true;
+    countdown.incidentOccurred = false;
+    countdown.lastUpdated = new Date();
+
+    await countdown.save();
     res.status(200).json(countdown);
   } catch (error) {
     res.status(500).json({
