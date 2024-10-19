@@ -1,12 +1,15 @@
 //TODO: https://codepen.io/nathan815/pen/MBJzOE
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import io from "socket.io-client";
 import { Message as iMessage } from "./types/messageTypes";
 import { ICountdown } from "./types/timerTypes";
 import Countdown from "./components/molecules/Countdown";
 
 import "./App.css";
+import Terminal from "./components/molecules/Terminal";
+import AudioPlayer from "./components/molecules/JukeBox";
+import { playAudio } from "./services/audioHelpers";
 
 const socket = io("http://localhost:5000");
 
@@ -15,6 +18,9 @@ function App() {
   const [messageText, setMessageText] = useState("");
   const [timer, setTimer] = useState<ICountdown | null>(null);
   const [minsRemaining, setMinsRemaining] = useState<number | null>(null);
+
+  const minuteTickAudioRef = useRef<HTMLAudioElement>(null);
+  const resetAudioRef = useRef<HTMLAudioElement>(null);
 
   useEffect(() => {
     socket.on("message", (message) => {
@@ -86,10 +92,19 @@ function App() {
     <div className="App">
       <h1>The Swan Station</h1>
       <h3> Country Code: []</h3>
-      <h3> Location: The Island</h3>
+      <h3> Location: The Island </h3>
 
-      <Countdown minsRemaining={minsRemaining ?? 0} />
-
+      <Countdown
+        minsRemaining={minsRemaining ?? 0}
+        onMinuteTick={() => playAudio(minuteTickAudioRef)}
+      />
+      <Terminal resetTimer={resetTimer} minsRemaining={minsRemaining ?? 0} />
+      <AudioPlayer
+        minuteTickAudioRef={minuteTickAudioRef}
+        resetAudioRef={resetAudioRef}
+      />
+      <button onClick={() => playAudio(resetAudioRef)}>Reset</button>
+      <button onClick={() => playAudio(minuteTickAudioRef)}>Tick</button>
       {/* <div className="messages">
         {messages.map((message, index) => (
           <Message
@@ -110,6 +125,7 @@ function App() {
       </div> */}
 
       <button onClick={resetTimer}>Failsafe Reset</button>
+      <p> 4 8 15 16 23 42</p>
     </div>
   );
 }

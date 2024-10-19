@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import io from "socket.io-client";
 
 const socket = io("http://localhost:5000");
@@ -6,11 +6,13 @@ const socket = io("http://localhost:5000");
 interface CountdownProps {
   minsRemaining: number | null;
   onCountdownEnd?: () => void;
+  onMinuteTick: () => void;
 }
 
 export default function Countdown({
   minsRemaining = null,
   onCountdownEnd,
+  onMinuteTick,
 }: CountdownProps) {
   const [hundreds, setHundreds] = useState(0); // Hundreds place for minutes
   const [tens, setTens] = useState(0); // Tens place for minutes
@@ -21,6 +23,7 @@ export default function Countdown({
   useEffect(() => {
     const FINAL_COUNTDOWN_THRESHOLD = 240; // 5 minutes in seconds
     let totalTimeRemaining = minsRemaining ? minsRemaining * 60 : 0;
+    let previousMinute = Math.floor(totalTimeRemaining / 60);
 
     const updateDigits = (timeInSeconds: number) => {
       const minutes = Math.floor(timeInSeconds / 60);
@@ -33,6 +36,13 @@ export default function Countdown({
       const isFinalCountdown = timeInSeconds <= FINAL_COUNTDOWN_THRESHOLD;
       setTenths(isFinalCountdown ? Math.floor(seconds / 10) : 0);
       setOnesSec(isFinalCountdown ? seconds % 10 : 0);
+
+      // Check if minute has changed
+      if (minutes !== previousMinute) {
+        //socket.emit('minuteChanged', { minutesRemaining: minutes });
+        onMinuteTick();
+        previousMinute = minutes;
+      }
     };
 
     const interval = setInterval(() => {
@@ -53,7 +63,7 @@ export default function Countdown({
   }, [minsRemaining, onCountdownEnd]);
 
   return (
-    <div>
+    <>
       <h1>Countdown</h1>
       <div className="flip-clock">
         {/* Three digits for minutes */}
@@ -65,7 +75,7 @@ export default function Countdown({
         <FlipCard digit={tenths} />
         <FlipCard digit={onesSec} />
       </div>
-    </div>
+    </>
   );
 }
 
@@ -85,13 +95,15 @@ function FlipCard({ digit }: { digit: number }) {
   }, [digit, previousDigit]);
 
   return (
-    <div className="flip-card">
-      <div className={`flip-card-inner ${isFlipping ? "flipping" : ""}`}>
-        {/* Front face shows the previous digit */}
-        <div className="flip-card-front">{previousDigit}</div>
-        {/* Back face shows the new digit */}
-        <div className="flip-card-back">{digit}</div>
+    <>
+      <div className="flip-card">
+        <div className={`flip-card-inner ${isFlipping ? "flipping" : ""}`}>
+          {/* Front face shows the previous digit */}
+          <div className="flip-card-front">{previousDigit}</div>
+          {/* Back face shows the new digit */}
+          <div className="flip-card-back">{digit}</div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }

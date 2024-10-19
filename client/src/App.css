@@ -103,3 +103,65 @@
     transform: rotateX(0deg);
   }
 }
+
+/* Terminal.css */
+
+.terminal {
+  background-color: black;
+  color: green;
+  font-family: "Courier New", Courier, monospace;
+  padding: 10px;
+  border: 3px solid #4caf50;
+  border-radius: 5px;
+  width: 600px;
+  height: 400px;
+  overflow-y: auto;
+  margin: 1.5rem auto;
+
+  @media (max-width: 768px) {
+    width: 90%;
+  }
+
+  @media (max-width: 480px) {
+    height: 200px;
+  }
+}
+
+.terminal-log {
+  white-space: pre-wrap;
+  margin-bottom: 10px;
+  overflow-y: auto;
+  max-height: 90%;
+}
+
+.terminal-input {
+  display: flex;
+  align-items: center;
+}
+
+.terminal-input input {
+  background-color: black;
+  color: green;
+  border: none;
+  outline: none;
+  font-family: "Courier New", Courier, monospace;
+  font-size: 16px;
+  width: 100%;
+}
+
+.terminal-line-cursor-effect::after {
+  content: " _";
+  animation: animate 1.5s linear infinite;
+}
+
+@keyframes animate {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 0.7;
+  }
+  100% {
+    opacity: 0;
+  }
+}
