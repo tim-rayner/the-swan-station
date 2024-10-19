@@ -29,7 +29,7 @@ const resetCountdown = asyncHandler(async (req, res) => {
     }
 
     countdown.resetLogs.push({ resetTime, user });
-    countdown.currentTime = 6480;
+    countdown.currentTime = 6540; //6540
     countdown.startTime = new Date();
     countdown.isRunning = true;
     countdown.incidentOccurred = false;

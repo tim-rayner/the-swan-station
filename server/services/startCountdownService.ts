@@ -10,7 +10,7 @@ export async function startCountdownService(): Promise<ICountdown> {
   const timer = await Countdown.findOne();
   if (!timer) {
     const newTimer = new Countdown({
-      currentTime: 6480, //108 mins
+      currentTime: 6540, //108 mins
       startTime: new Date(),
       isRunning: true,
       incidentOccurred: false,
@@ -46,7 +46,7 @@ export async function startCountdownService(): Promise<ICountdown> {
       time: incidentTime,
     });
     //reset the timer
-    timer.currentTime = 6480;
+    timer.currentTime = 6540;
     timer.startTime = new Date();
     timer.isRunning = true;
     timer.incidentOccurred = false;
