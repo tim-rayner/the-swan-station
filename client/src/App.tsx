@@ -1,8 +1,12 @@
+//TODO: https://codepen.io/nathan815/pen/MBJzOE
+
 import { useState, useEffect } from "react";
 import io from "socket.io-client";
-import Message from "./components/atoms/Message";
 import { Message as iMessage } from "./types/messageTypes";
 import { ICountdown } from "./types/timerTypes";
+import Countdown from "./components/molecules/Countdown";
+
+import "./App.css";
 
 const socket = io("http://localhost:5000");
 
@@ -70,7 +74,7 @@ function App() {
     console.log("updated Timer", timer);
   }
 
-  //temp makeshift count down 1 min and update minsRemaining
+  //temp makeshift count down 1 min and update minsRemaining - this will be replaced with synchronisation with the server
   useEffect(() => {
     const interval = setInterval(() => {
       setMinsRemaining((prevMins) => (prevMins ? prevMins - 1 : null));
@@ -83,8 +87,10 @@ function App() {
       <h1>The Swan Station</h1>
       <h3> Country Code: []</h3>
       <h3> Location: The Island</h3>
-      <h3> Timer: {minsRemaining} minutes</h3>
-      <div className="messages">
+
+      <Countdown minsRemaining={minsRemaining ?? 0} />
+
+      {/* <div className="messages">
         {messages.map((message, index) => (
           <Message
             key={index}
@@ -101,7 +107,7 @@ function App() {
           placeholder="Type your message..."
         />
         <button onClick={sendMessage}>Send</button>
-      </div>
+      </div> */}
 
       <button onClick={resetTimer}>Failsafe Reset</button>
     </div>
