@@ -11,7 +11,8 @@ import Terminal from "./components/molecules/Terminal";
 import AudioPlayer from "./components/molecules/JukeBox";
 import { playAudio } from "./services/audioHelpers";
 
-const socket = io("http://localhost:5000");
+const API_URL = process.env.REACT_APP_API_URL || "";
+const socket = io(process.env.REACT_APP_API_URL || "");
 
 function App() {
   const [messages, setMessages] = useState<iMessage[]>([]);
@@ -40,18 +41,15 @@ function App() {
   };
 
   async function fetchData() {
-    const response = await fetch("http://localhost:5000/api/countdown");
+    const response = await fetch(`${API_URL}/api/countdown`);
     const timerData: ICountdown = await response.json();
     console.log(timerData);
-
     // Convert startTime string to Date object
     const startTime = new Date(timerData.startTime);
-
     const secondsElapsed = Math.floor(
       (new Date().getTime() - startTime.getTime()) / 1000
     );
     const secondsRemaining = timerData.currentTime - secondsElapsed;
-
     setTimer({
       ...timerData,
       startTime: startTime,
@@ -62,7 +60,7 @@ function App() {
 
   async function resetTimer() {
     //make a POST request to api/countdown/reset with params { user: "Tim", resetTime: new Date() }
-    const response = await fetch("http://localhost:5000/api/countdown/reset", {
+    const response = await fetch(`${API_URL}/api/countdown/reset`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -71,13 +69,16 @@ function App() {
     });
     if (response.ok) {
       console.log("Timer reset");
+      playAudio(resetAudioRef);
+
+      const timer = await response.json();
+
+      setMinsRemaining(108);
+
+      console.log("updated Timer", timer);
     } else {
       console.log("Failed to reset timer");
     }
-
-    const timer = await response.json();
-    setMinsRemaining(108);
-    console.log("updated Timer", timer);
   }
 
   //temp makeshift count down 1 min and update minsRemaining - this will be replaced with synchronisation with the server
