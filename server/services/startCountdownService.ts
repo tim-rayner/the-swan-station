@@ -40,8 +40,9 @@ export async function startCountdownService(): Promise<ICountdown> {
       timer.startTime.getTime() + timer.currentTime * 1000
     );
     console.log(`APOCALYPSE STARTED AT (${incidentTime.toLocaleString()})`.red);
+
     timer.incidentOccurred = true;
-    timer.incidentLog.push({
+    timer.incidentLogs.push({
       incident: "Apocalypse",
       time: incidentTime,
     });
@@ -53,6 +54,7 @@ export async function startCountdownService(): Promise<ICountdown> {
     timer.lastUpdated = new Date();
     timer.resetLogs.push({
       resetTime: new Date(),
+      user: "System",
     });
 
     await timer.save();
