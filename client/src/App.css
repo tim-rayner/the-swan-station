@@ -29,6 +29,11 @@
   border-radius: 10px;
 }
 
+.final-countdown {
+  background-color: #fff;
+  color: #333;
+}
+
 .flip-card-back {
   transform: rotateX(180deg);
 }

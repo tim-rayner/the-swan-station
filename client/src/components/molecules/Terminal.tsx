@@ -1,11 +1,11 @@
 import { KeyboardEvent, useRef, useState } from "react";
 
 interface TerminalProps {
-  minsRemaining?: number;
+  secsRemaining?: number;
   resetTimer: () => void;
 }
 
-export default function Terminal({ minsRemaining, resetTimer }: TerminalProps) {
+export default function Terminal({ secsRemaining, resetTimer }: TerminalProps) {
   const [input, setInput] = useState("");
   const [log, setLog] = useState<string[]>([
     "Welcome to the Dharma Initiative. You are currently located in The Swan Station.",

@@ -5,12 +5,14 @@ interface CountdownProps {
   secsRemaining: number | null;
   onCountdownEnd?: () => void;
   onMinuteTick: () => void;
+  startFinalCountdown: () => void;
 }
 
 export default function Countdown({
   secsRemaining,
   onCountdownEnd,
   onMinuteTick,
+  startFinalCountdown,
 }: CountdownProps) {
   const { startTime } = useTimer();
 
@@ -19,6 +21,7 @@ export default function Countdown({
   const [ones, setOnes] = useState(0); // Ones place for minutes
   const [tenths, setTenths] = useState(0); // Tens place for seconds
   const [onesSec, setOnesSec] = useState(0); // Ones place for seconds
+  const [isFinalCountdown, setIsFinalCountdown] = useState(false);
 
   const [endTime, setEndTime] = useState<Date | null>(null);
 
@@ -35,10 +38,14 @@ export default function Countdown({
       setTens(Math.floor((minutes % 100) / 10));
       setOnes(minutes % 10);
 
-      const isFinalCountdown = timeInSeconds <= FINAL_COUNTDOWN_THRESHOLD;
-      setTenths(isFinalCountdown ? Math.floor(seconds / 10) : 0);
-      setOnesSec(isFinalCountdown ? seconds % 10 : 0);
-
+      if (timeInSeconds > 0 && timeInSeconds <= FINAL_COUNTDOWN_THRESHOLD) {
+        if (!isFinalCountdown) {
+          startFinalCountdown();
+        }
+        setIsFinalCountdown(true);
+        setTenths(Math.floor(seconds / 10));
+        setOnesSec(seconds % 10);
+      }
       // Check if minute has changed
       if (minutes !== previousMinuteRef.current) {
         onMinuteTick();
@@ -85,8 +92,8 @@ export default function Countdown({
         <FlipCard digit={ones} />
         <span>:</span>
         {/* Two digits for seconds */}
-        <FlipCard digit={tenths} />
-        <FlipCard digit={onesSec} />
+        <FlipCard digit={tenths} isFinalCountdown={isFinalCountdown} />
+        <FlipCard digit={onesSec} isFinalCountdown={isFinalCountdown} />
       </div>
 
       {/* Hidden - needed for dev */}
@@ -96,7 +103,13 @@ export default function Countdown({
 }
 
 // FlipCard component for rendering each digit
-function FlipCard({ digit }: { digit: number }) {
+function FlipCard({
+  digit,
+  isFinalCountdown,
+}: {
+  digit: number;
+  isFinalCountdown?: boolean;
+}) {
   const [previousDigit, setPreviousDigit] = useState(digit);
   const [isFlipping, setIsFlipping] = useState(false);
 
@@ -116,12 +129,24 @@ function FlipCard({ digit }: { digit: number }) {
         <div
           className={`flip-card-inner ${
             isFlipping ? "flipping" : ""
-          } relative w-[50px] h-[80px] `}
+          }  relative w-[50px] h-[80px] `}
         >
           {/* Front face shows the previous digit */}
-          <div className="flip-card-front">{previousDigit}</div>
+          <div
+            className={`flip-card-front ${
+              isFinalCountdown ? "final-countdown" : ""
+            } `}
+          >
+            {previousDigit}
+          </div>
           {/* Back face shows the new digit */}
-          <div className="flip-card-back">{digit}</div>
+          <div
+            className={`flip-card-back ${
+              isFinalCountdown ? "final-countdown" : ""
+            }`}
+          >
+            {digit}
+          </div>
         </div>
       </div>
     </>

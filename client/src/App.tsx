@@ -1,18 +1,19 @@
 //TODO: https://codepen.io/nathan815/pen/MBJzOE
+import "./App.css";
 
 import { useState, useEffect, useRef } from "react";
 import { Message as iMessage } from "./types/messageTypes";
 import { ICountdown } from "./types/timerTypes";
 import Countdown from "./components/molecules/Countdown";
-import "./App.css";
 import Terminal from "./components/molecules/Terminal";
 import AudioPlayer from "./components/molecules/JukeBox";
-import { playAudio } from "./utils/audioHelpers";
+
 import dharmaLogo from "./assets/png/dharma_logo_black.png";
 import Message from "./components/atoms/Message";
 import { socket } from "./socket";
 
 import { useTimer } from "./contexts/TimerContext";
+import { playAudio } from "./utils/audioHelpers";
 
 function App() {
   const { setTimer, secondsRemaining } = useTimer();
@@ -22,9 +23,11 @@ function App() {
 
   const [messages, setMessages] = useState<iMessage[]>([]);
   const [messageText, setMessageText] = useState("");
+  const [isFinalCountdown, setIsFinalCountdown] = useState(false);
 
   const minuteTickAudioRef = useRef<HTMLAudioElement>(null);
   const resetAudioRef = useRef<HTMLAudioElement>(null);
+  const pongAudioRef = useRef<HTMLAudioElement>(null);
 
   function sendMessage() {
     if (messageText === "") {
@@ -37,19 +40,50 @@ function App() {
 
   async function resetTimer() {
     try {
+      stopFinalCountdown();
       socket.emit("resetTimer", "anonymous", new Date());
       setTimer(new Date(), 108 * 60); // 108 minutes in seconds
+
       playAudio(resetAudioRef);
     } catch (error) {
       console.error("Failed to reset timer", error);
     }
   }
 
-  function handleKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
-    if (event.key === "Enter") {
-      sendMessage();
-    }
+  function startFinalCountdown() {
+    setIsFinalCountdown(true);
+    console.log("Final countdown started");
   }
+
+  function stopFinalCountdown() {
+    setIsFinalCountdown(false);
+    console.log("Final countdown stopped");
+  }
+
+  useEffect(() => {
+    let minuteTickInterval: NodeJS.Timeout;
+    let pongInterval: NodeJS.Timeout;
+
+    playAudio(minuteTickAudioRef);
+
+    if (isFinalCountdown) {
+      minuteTickInterval = setInterval(() => {
+        playAudio(minuteTickAudioRef);
+      }, 1000); // Play every 60 seconds (1 minute)
+
+      pongInterval = setInterval(() => {
+        playAudio(pongAudioRef);
+      }, 2000); // Play every second
+    }
+
+    // Cleanup function
+    return () => {
+      if (minuteTickInterval) clearInterval(minuteTickInterval);
+      if (pongInterval) clearInterval(pongInterval);
+    };
+  }, [isFinalCountdown]); // This effect runs when isFinalCountdown changes
+
+  // useEffects
 
   useEffect(() => {
     setLocalSecondsRemaining(secondsRemaining);
@@ -89,9 +123,6 @@ function App() {
     };
   }, [setTimer]); // Add setTimer to the dependency array
 
-  // Calculate minutes and seconds from secondsRemaining
-  const minsRemaining = Math.floor(secondsRemaining / 60);
-
   return (
     <div className="App">
       <div className="swan-wrapper items-center content-center flex flex-col">
@@ -105,10 +136,14 @@ function App() {
           <Countdown
             secsRemaining={localSecondsRemaining}
             onMinuteTick={() => playAudio(minuteTickAudioRef)}
+            startFinalCountdown={startFinalCountdown}
           />
         </div>
 
-        <Terminal minsRemaining={minsRemaining} resetTimer={resetTimer} />
+        <Terminal
+          secsRemaining={localSecondsRemaining}
+          resetTimer={resetTimer}
+        />
 
         <div className="flex flex-col my-4">
           <h3> Location: The Island </h3>
@@ -118,6 +153,7 @@ function App() {
         <AudioPlayer
           minuteTickAudioRef={minuteTickAudioRef}
           resetAudioRef={resetAudioRef}
+          pongAudioRef={pongAudioRef}
         />
 
         <div className="messages">
@@ -129,6 +165,11 @@ function App() {
             />
           ))}
         </div>
+
+        <button onClick={startFinalCountdown}>
+          test final countdown sequence
+        </button>
+        <button onClick={stopFinalCountdown}> stop final countdown </button>
         {/* <div className="input-box">
         <input
           type="text"
