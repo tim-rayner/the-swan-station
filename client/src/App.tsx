@@ -133,12 +133,14 @@ function App() {
         </div>
 
         <Computer>
-          <div className="entry">test</div>
+          <div className="entry">
+            <Terminal
+              secsRemaining={localSecondsRemaining}
+              resetTimer={resetTimer}
+            />
+          </div>
         </Computer>
-        <Terminal
-          secsRemaining={localSecondsRemaining}
-          resetTimer={resetTimer}
-        />
+
         <div className="flex flex-col my-4">
           <h3> Location: The Island </h3>
           <h3> Country Code: N/A</h3>
