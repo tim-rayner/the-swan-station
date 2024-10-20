@@ -78,13 +78,7 @@ export default function Countdown({
 
   return (
     <>
-      <h1>
-        Countdown to {endTime?.toLocaleTimeString()} || started:
-        {startTime?.toLocaleTimeString()}
-        seconds remaining: {secsRemaining}
-      </h1>
-
-      <div className="flip-clock">
+      <div className="flip-clock bg-brown w-fit p-4 rounded-lg flex items-center justify-center">
         {/* Three digits for minutes */}
         <FlipCard digit={hundreds} />
         <FlipCard digit={tens} />
@@ -94,6 +88,9 @@ export default function Countdown({
         <FlipCard digit={tenths} />
         <FlipCard digit={onesSec} />
       </div>
+
+      {/* Hidden - needed for dev */}
+      <h1 className="hidden"> seconds remaining: {secsRemaining}</h1>
     </>
   );
 }
@@ -115,8 +112,12 @@ function FlipCard({ digit }: { digit: number }) {
 
   return (
     <>
-      <div className="flip-card">
-        <div className={`flip-card-inner ${isFlipping ? "flipping" : ""}`}>
+      <div className="flip-card mx-[5px]">
+        <div
+          className={`flip-card-inner ${
+            isFlipping ? "flipping" : ""
+          } relative w-[50px] h-[80px] `}
+        >
           {/* Front face shows the previous digit */}
           <div className="flip-card-front">{previousDigit}</div>
           {/* Back face shows the new digit */}

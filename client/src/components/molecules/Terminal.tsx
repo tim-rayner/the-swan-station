@@ -63,13 +63,16 @@ export default function Terminal({ minsRemaining, resetTimer }: TerminalProps) {
   }
 
   return (
-    <div className="terminal" onClick={handleTerminalClick}>
-      <div className="terminal-log">
+    <div
+      className="terminal bg-black text-green-700 p-4 border-solid border-green-700 border-4 rounded-sm w-[90%] md:w-[600px] h-[200px] md:h-[400px] mx-auto my-6 overflow-y-auto "
+      onClick={handleTerminalClick}
+    >
+      <div className="terminal-log whitespace-pre-wrap mb-3 overflow-y-auto max-h-[90%]">
         {log.map((entry, index) => (
           <div key={index}>{entry}</div>
         ))}
       </div>
-      <div className="terminal-input ">
+      <div className="terminal-input flex items-center">
         <span>&gt;:</span>
         <input
           type="text"
@@ -78,7 +81,7 @@ export default function Terminal({ minsRemaining, resetTimer }: TerminalProps) {
           onKeyDown={handleInput}
           autoFocus
           ref={inputRef}
-          className="terminal-line-cursor-effect"
+          className="terminal-line-cursor-effect bg-black text-green-700 border-none outline-none text-"
         />
       </div>
     </div>

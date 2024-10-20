@@ -8,7 +8,7 @@ import "./App.css";
 import Terminal from "./components/molecules/Terminal";
 import AudioPlayer from "./components/molecules/JukeBox";
 import { playAudio } from "./utils/audioHelpers";
-
+import dharmaLogo from "./assets/png/dharma_logo_black.png";
 import Message from "./components/atoms/Message";
 import { socket } from "./socket";
 
@@ -94,34 +94,42 @@ function App() {
 
   return (
     <div className="App">
-      <h1>The Swan Station</h1>
-      <h3> Country Code: []</h3>
-      <h3> Location: The Island </h3>
+      <div className="swan-wrapper items-center content-center flex flex-col">
+        <img
+          src={dharmaLogo}
+          className="my-4 md:my-8"
+          alt="DHARMA INITIATIVE - SWAN STATION"
+        />
 
-      <Countdown
-        secsRemaining={localSecondsRemaining}
-        onMinuteTick={() => playAudio(minuteTickAudioRef)}
-      />
-
-      <Terminal minsRemaining={minsRemaining} resetTimer={resetTimer} />
-
-      <AudioPlayer
-        minuteTickAudioRef={minuteTickAudioRef}
-        resetAudioRef={resetAudioRef}
-      />
-      <button onClick={() => playAudio(resetAudioRef)}>Reset</button>
-      <button onClick={() => playAudio(minuteTickAudioRef)}>Tick</button>
-
-      <div className="messages">
-        {messages.map((message, index) => (
-          <Message
-            key={index}
-            username={message.username}
-            text={message.text}
+        <div className="flex flex-col my-4 md:my-8">
+          <Countdown
+            secsRemaining={localSecondsRemaining}
+            onMinuteTick={() => playAudio(minuteTickAudioRef)}
           />
-        ))}
-      </div>
-      <div className="input-box">
+        </div>
+
+        <Terminal minsRemaining={minsRemaining} resetTimer={resetTimer} />
+
+        <div className="flex flex-col my-4">
+          <h3> Location: The Island </h3>
+          <h3> Country Code: N/A</h3>
+        </div>
+
+        <AudioPlayer
+          minuteTickAudioRef={minuteTickAudioRef}
+          resetAudioRef={resetAudioRef}
+        />
+
+        <div className="messages">
+          {messages.map((message, index) => (
+            <Message
+              key={index}
+              username={message.username}
+              text={message.text}
+            />
+          ))}
+        </div>
+        {/* <div className="input-box">
         <input
           type="text"
           value={messageText}
@@ -130,10 +138,10 @@ function App() {
           onKeyDown={handleKeyPress}
         />
         <button onClick={sendMessage}>Send</button>
-      </div>
+      </div> */}
 
-      <button onClick={resetTimer}>Failsafe Reset</button>
-      <p> 4 8 15 16 23 42</p>
+        <p> 4 8 15 16 23 42</p>
+      </div>
     </div>
   );
 }
