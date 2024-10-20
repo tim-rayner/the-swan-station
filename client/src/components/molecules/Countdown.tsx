@@ -1,5 +1,5 @@
 import { useTimer } from "../../contexts/TimerContext";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 
 interface CountdownProps {
   secsRemaining: number | null;
@@ -22,10 +22,10 @@ export default function Countdown({
 
   const [endTime, setEndTime] = useState<Date | null>(null);
 
+  const previousMinuteRef = useRef(Math.floor(secsRemaining! / 60));
+
   useEffect(() => {
     const FINAL_COUNTDOWN_THRESHOLD = 240; // 5 minutes in seconds
-
-    let previousMinute = Math.floor(secsRemaining! / 60);
 
     const updateDigits = (timeInSeconds: number) => {
       const minutes = Math.floor(timeInSeconds / 60);
@@ -40,28 +40,33 @@ export default function Countdown({
       setOnesSec(isFinalCountdown ? seconds % 10 : 0);
 
       // Check if minute has changed
-      if (minutes !== previousMinute) {
+      if (minutes !== previousMinuteRef.current) {
         onMinuteTick();
-        previousMinute = minutes;
+        previousMinuteRef.current = minutes;
       }
     };
 
+    let remainingTime = secsRemaining!;
+
     const interval = setInterval(() => {
-      if (secsRemaining! <= 0) {
+      if (remainingTime <= 0) {
+        console.log("Countdown ended");
         clearInterval(interval);
         onCountdownEnd?.();
         return;
       }
 
-      secsRemaining! -= 1;
-      updateDigits(secsRemaining!);
+      updateDigits(remainingTime);
+      remainingTime -= 1;
     }, 1000);
 
     // Initial update
-    updateDigits(secsRemaining!);
+    updateDigits(remainingTime);
 
-    return () => clearInterval(interval);
-  }, [secsRemaining, onCountdownEnd]);
+    return () => {
+      clearInterval(interval);
+    };
+  }, [secsRemaining, onCountdownEnd, onMinuteTick]);
 
   useEffect(() => {
     if (startTime) {
