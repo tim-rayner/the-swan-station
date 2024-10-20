@@ -1,3 +1,4 @@
+import { socket } from "../../socket";
 import { KeyboardEvent, useRef, useState } from "react";
 
 interface TerminalProps {
@@ -29,6 +30,14 @@ export default function Terminal({ secsRemaining, resetTimer }: TerminalProps) {
 
     newLog.push(` ${cmd}`);
 
+    //if command starts with msg:
+    if (cmd.startsWith("msg:")) {
+      const message = cmd.slice(4);
+      sendMessage(message);
+      newLog.push(`Message sent: ${message}`);
+      return;
+    }
+
     // Basic command response simulation
     switch (cmd.toLowerCase()) {
       case "help":
@@ -47,6 +56,14 @@ export default function Terminal({ secsRemaining, resetTimer }: TerminalProps) {
     }
 
     setLog(newLog);
+  }
+
+  function sendMessage(messageText: string) {
+    if (messageText === "") {
+      return;
+    }
+
+    socket.emit("sendMessage", { text: messageText, username: "Desmond" });
   }
 
   function clearLog() {

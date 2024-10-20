@@ -22,21 +22,12 @@ function App() {
     useState(secondsRemaining);
 
   const [messages, setMessages] = useState<iMessage[]>([]);
-  const [messageText, setMessageText] = useState("");
+
   const [isFinalCountdown, setIsFinalCountdown] = useState(false);
 
   const minuteTickAudioRef = useRef<HTMLAudioElement>(null);
   const resetAudioRef = useRef<HTMLAudioElement>(null);
   const pongAudioRef = useRef<HTMLAudioElement>(null);
-
-  function sendMessage() {
-    if (messageText === "") {
-      return;
-    }
-
-    socket.emit("sendMessage", { text: messageText, username: "Tim" });
-    setMessageText("");
-  }
 
   async function resetTimer() {
     try {
