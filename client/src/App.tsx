@@ -14,6 +14,7 @@ import { socket } from "./socket";
 
 import { useTimer } from "./contexts/TimerContext";
 import { playAudio } from "./utils/audioHelpers";
+import Computer from "./components/molecules/Computer";
 
 function App() {
   const { setTimer, secondsRemaining } = useTimer();
@@ -131,11 +132,13 @@ function App() {
           />
         </div>
 
+        <Computer>
+          <div className="entry">test</div>
+        </Computer>
         <Terminal
           secsRemaining={localSecondsRemaining}
           resetTimer={resetTimer}
         />
-
         <div className="flex flex-col my-4">
           <h3> Location: The Island </h3>
           <h3> Country Code: N/A</h3>
