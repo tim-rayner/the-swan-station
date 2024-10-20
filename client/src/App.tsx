@@ -1,15 +1,16 @@
 //TODO: https://codepen.io/nathan815/pen/MBJzOE
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import io from "socket.io-client";
 import { Message as iMessage } from "./types/messageTypes";
 import { ICountdown } from "./types/timerTypes";
 import Countdown from "./components/molecules/Countdown";
-
 import "./App.css";
 import Terminal from "./components/molecules/Terminal";
 import AudioPlayer from "./components/molecules/JukeBox";
-import { playAudio } from "./services/audioHelpers";
+import { playAudio } from "./utils/audioHelpers";
+import NewCountdown from "./components/molecules/newCountdown";
+import Message from "./components/atoms/Message";
 
 const API_URL = process.env.REACT_APP_API_URL || "";
 const socket = io(process.env.REACT_APP_API_URL || "");
@@ -17,67 +18,35 @@ const socket = io(process.env.REACT_APP_API_URL || "");
 function App() {
   const [messages, setMessages] = useState<iMessage[]>([]);
   const [messageText, setMessageText] = useState("");
-  const [timer, setTimer] = useState<ICountdown | null>(null);
+
   const [minsRemaining, setMinsRemaining] = useState<number | null>(null);
+  const [secsRemaining, setSecsRemaining] = useState<number | null>(null);
 
   const minuteTickAudioRef = useRef<HTMLAudioElement>(null);
   const resetAudioRef = useRef<HTMLAudioElement>(null);
 
-  useEffect(() => {
-    socket.on("message", (message) => {
-      setMessages([...messages, message]);
-    });
-  }, [messages]);
+  function sendMessage() {
+    if (messageText === "") {
+      return;
+    }
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  //
-
-  const sendMessage = () => {
-    socket.emit("sendMessage", { text: messageText });
+    socket.emit("sendMessage", { text: messageText, username: "Tim" });
     setMessageText("");
-  };
-
-  async function fetchData() {
-    const response = await fetch(`${API_URL}/api/countdown`);
-    const timerData: ICountdown = await response.json();
-    console.log(timerData);
-    // Convert startTime string to Date object
-    const startTime = new Date(timerData.startTime);
-    const secondsElapsed = Math.floor(
-      (new Date().getTime() - startTime.getTime()) / 1000
-    );
-    const secondsRemaining = timerData.currentTime - secondsElapsed;
-    setTimer({
-      ...timerData,
-      startTime: startTime,
-    });
-    setMinsRemaining(Math.floor(secondsRemaining / 60));
-    console.log(`Time remaining: ${secondsRemaining} seconds`);
   }
 
   async function resetTimer() {
-    //make a POST request to api/countdown/reset with params { user: "Tim", resetTime: new Date() }
-    const response = await fetch(`${API_URL}/api/countdown/reset`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ user: "Tim", resetTime: new Date() }),
-    });
-    if (response.ok) {
-      console.log("Timer reset");
-      playAudio(resetAudioRef);
-
-      const timer = await response.json();
-
+    try {
+      socket.emit("resetTimer", "anonymous", new Date());
       setMinsRemaining(108);
+      playAudio(resetAudioRef);
+    } catch (error) {
+      console.error("Failed to reset timer", error);
+    }
+  }
 
-      console.log("updated Timer", timer);
-    } else {
-      console.log("Failed to reset timer");
+  function handleKeyPress(event: React.KeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      sendMessage();
     }
   }
 
@@ -89,6 +58,39 @@ function App() {
     return () => clearInterval(interval);
   }, []);
 
+  useEffect(() => {
+    const handleMessage = (message: iMessage) => {
+      message.username = message.username || "Anonymous";
+      setMessages((prevMessages) => [...prevMessages, message]);
+    };
+
+    const handleTimer = (timer: ICountdown) => {
+      console.log("Received timer", timer);
+
+      // Convert startTime string to Date object
+      const startTime = new Date(timer.startTime);
+
+      const secondsElapsed = Math.floor(
+        (new Date().getTime() - startTime.getTime()) / 1000
+      );
+
+      const secondsRemaining = timer.currentTime - secondsElapsed;
+
+      setMinsRemaining(Math.floor(secondsRemaining / 60));
+
+      console.log(`Time remaining: ${secondsRemaining} seconds`);
+    };
+
+    socket.on("message", handleMessage);
+    socket.on("timer", handleTimer);
+
+    // Cleanup function to remove the listener when the component unmounts
+    return () => {
+      socket.off("message", handleMessage);
+      socket.off("timer", handleTimer);
+    };
+  }, []); // Empty dependency array
+
   return (
     <div className="App">
       <h1>The Swan Station</h1>
@@ -97,16 +99,21 @@ function App() {
 
       <Countdown
         minsRemaining={minsRemaining ?? 0}
+        secsRemaining={secsRemaining ?? 0}
         onMinuteTick={() => playAudio(minuteTickAudioRef)}
       />
+      <NewCountdown socket={socket} />
+
       <Terminal resetTimer={resetTimer} minsRemaining={minsRemaining ?? 0} />
+
       <AudioPlayer
         minuteTickAudioRef={minuteTickAudioRef}
         resetAudioRef={resetAudioRef}
       />
       <button onClick={() => playAudio(resetAudioRef)}>Reset</button>
       <button onClick={() => playAudio(minuteTickAudioRef)}>Tick</button>
-      {/* <div className="messages">
+
+      <div className="messages">
         {messages.map((message, index) => (
           <Message
             key={index}
@@ -121,9 +128,10 @@ function App() {
           value={messageText}
           onChange={(e) => setMessageText(e.target.value)}
           placeholder="Type your message..."
+          onKeyDown={handleKeyPress}
         />
         <button onClick={sendMessage}>Send</button>
-      </div> */}
+      </div>
 
       <button onClick={resetTimer}>Failsafe Reset</button>
       <p> 4 8 15 16 23 42</p>

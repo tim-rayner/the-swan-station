@@ -8,7 +8,7 @@ interface TerminalProps {
 export default function Terminal({ minsRemaining, resetTimer }: TerminalProps) {
   const [input, setInput] = useState("");
   const [log, setLog] = useState<string[]>([
-    "Welcome to the DHARMA Initiative Terminal",
+    "Welcome to the Dharma Initiative. You are currently located in The Swan Station.",
   ]);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -36,6 +36,7 @@ export default function Terminal({ minsRemaining, resetTimer }: TerminalProps) {
         break;
       case "clear":
         clearLog();
+        newLog = [];
         break;
       case "4 8 15 16 23 42":
         correctSequence(newLog);

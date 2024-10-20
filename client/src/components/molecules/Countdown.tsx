@@ -1,16 +1,15 @@
-import React, { useEffect, useRef, useState } from "react";
-import io from "socket.io-client";
-
-const socket = io("http://localhost:5000");
+import { useEffect, useState } from "react";
 
 interface CountdownProps {
   minsRemaining: number | null;
+  secsRemaining: number | null; //for pre
   onCountdownEnd?: () => void;
   onMinuteTick: () => void;
 }
 
 export default function Countdown({
   minsRemaining = null,
+  secsRemaining = null,
   onCountdownEnd,
   onMinuteTick,
 }: CountdownProps) {
@@ -65,6 +64,7 @@ export default function Countdown({
   return (
     <>
       <h1>Countdown</h1>
+      <h3> {secsRemaining}</h3>
       <div className="flip-clock">
         {/* Three digits for minutes */}
         <FlipCard digit={hundreds} />

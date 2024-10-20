@@ -9,6 +9,7 @@ import connectDB from "./db.js";
 //Route imports
 import countdownRouter from "./routes/countdown.js";
 import { startCountdownService } from "./services/startCountdownService.js";
+import { resetTimer } from "./services/timerService.js";
 
 const PORT = process.env.PORT || 5000;
 const app = express();
@@ -42,7 +43,7 @@ dotenv.config();
 connectDB();
 
 //Start the countdown timer
-const timer = await startCountdownService();
+let timer = await startCountdownService();
 
 if (timer.incidentOccurred) {
   io.emit("incident", timer);
@@ -50,10 +51,25 @@ if (timer.incidentOccurred) {
 
 //Socket listeners
 io.on("connection", (socket: Socket) => {
-  console.log("New user connected");
-  io.emit("initTimer", timer);
+  console.log("New user connected", socket.id);
+
+  socket.emit("timer", timer);
+
+  //call own reset api on reset event recieved
+  socket.on("resetTimer", async (user: string, resetTime: Date) => {
+    console.log("Resetting timer");
+    try {
+      const updatedTimer = await resetTimer(user, new Date(resetTime));
+      timer = updatedTimer;
+      io.emit("timer", updatedTimer); // Broadcast the updated timer to all clients
+    } catch (error) {
+      console.error("Error resetting timer:", error);
+      socket.emit("error", "Failed to reset timer");
+    }
+  });
 
   socket.on("sendMessage", (message: string) => {
+    console.log("Received message", message);
     io.emit("message", message); // Broadcast the message to all connected clients
   });
 
