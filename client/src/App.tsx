@@ -1,7 +1,6 @@
 //TODO: https://codepen.io/nathan815/pen/MBJzOE
 
-import { useState, useEffect, useRef, useCallback } from "react";
-import io from "socket.io-client";
+import { useState, useEffect, useRef } from "react";
 import { Message as iMessage } from "./types/messageTypes";
 import { ICountdown } from "./types/timerTypes";
 import Countdown from "./components/molecules/Countdown";
@@ -9,18 +8,20 @@ import "./App.css";
 import Terminal from "./components/molecules/Terminal";
 import AudioPlayer from "./components/molecules/JukeBox";
 import { playAudio } from "./utils/audioHelpers";
-import NewCountdown from "./components/molecules/newCountdown";
-import Message from "./components/atoms/Message";
 
-const API_URL = process.env.REACT_APP_API_URL || "";
-const socket = io(process.env.REACT_APP_API_URL || "");
+import Message from "./components/atoms/Message";
+import { socket } from "./socket";
+
+import { useTimer } from "./contexts/TimerContext";
 
 function App() {
+  const { setTimer, secondsRemaining } = useTimer();
+
+  const [localSecondsRemaining, setLocalSecondsRemaining] =
+    useState(secondsRemaining);
+
   const [messages, setMessages] = useState<iMessage[]>([]);
   const [messageText, setMessageText] = useState("");
-
-  const [minsRemaining, setMinsRemaining] = useState<number | null>(null);
-  const [secsRemaining, setSecsRemaining] = useState<number | null>(null);
 
   const minuteTickAudioRef = useRef<HTMLAudioElement>(null);
   const resetAudioRef = useRef<HTMLAudioElement>(null);
@@ -37,7 +38,7 @@ function App() {
   async function resetTimer() {
     try {
       socket.emit("resetTimer", "anonymous", new Date());
-      setMinsRemaining(108);
+      setTimer(new Date(), 108 * 60); // 108 minutes in seconds
       playAudio(resetAudioRef);
     } catch (error) {
       console.error("Failed to reset timer", error);
@@ -50,11 +51,15 @@ function App() {
     }
   }
 
-  //temp makeshift count down 1 min and update minsRemaining - this will be replaced with synchronisation with the server
+  useEffect(() => {
+    setLocalSecondsRemaining(secondsRemaining);
+  }, [secondsRemaining]);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setMinsRemaining((prevMins) => (prevMins ? prevMins - 1 : null));
-    }, 60000);
+      setLocalSecondsRemaining((prevSeconds) => Math.max(prevSeconds - 1, 0));
+    }, 1000);
+
     return () => clearInterval(interval);
   }, []);
 
@@ -66,19 +71,12 @@ function App() {
 
     const handleTimer = (timer: ICountdown) => {
       console.log("Received timer", timer);
-
-      // Convert startTime string to Date object
       const startTime = new Date(timer.startTime);
-
       const secondsElapsed = Math.floor(
         (new Date().getTime() - startTime.getTime()) / 1000
       );
-
-      const secondsRemaining = timer.currentTime - secondsElapsed;
-
-      setMinsRemaining(Math.floor(secondsRemaining / 60));
-
-      console.log(`Time remaining: ${secondsRemaining} seconds`);
+      const remainingSeconds = Math.max(0, timer.currentTime - secondsElapsed);
+      setTimer(startTime, remainingSeconds);
     };
 
     socket.on("message", handleMessage);
@@ -89,7 +87,10 @@ function App() {
       socket.off("message", handleMessage);
       socket.off("timer", handleTimer);
     };
-  }, []); // Empty dependency array
+  }, [setTimer]); // Add setTimer to the dependency array
+
+  // Calculate minutes and seconds from secondsRemaining
+  const minsRemaining = Math.floor(secondsRemaining / 60);
 
   return (
     <div className="App">
@@ -98,13 +99,11 @@ function App() {
       <h3> Location: The Island </h3>
 
       <Countdown
-        minsRemaining={minsRemaining ?? 0}
-        secsRemaining={secsRemaining ?? 0}
+        secsRemaining={localSecondsRemaining}
         onMinuteTick={() => playAudio(minuteTickAudioRef)}
       />
-      <NewCountdown socket={socket} />
 
-      <Terminal resetTimer={resetTimer} minsRemaining={minsRemaining ?? 0} />
+      <Terminal minsRemaining={minsRemaining} resetTimer={resetTimer} />
 
       <AudioPlayer
         minuteTickAudioRef={minuteTickAudioRef}

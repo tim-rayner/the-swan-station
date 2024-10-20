@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import "./index.css";
 import App from "./App";
+import { TimerProvider } from "./contexts/TimerContext";
 
 console.log(
   "API URL:",
@@ -13,4 +14,8 @@ const root = ReactDOM.createRoot(
 );
 
 // todo: add <React.StrictMode/> back once sockets are working
-root.render(<App />);
+root.render(
+  <TimerProvider>
+    <App />
+  </TimerProvider>
+);

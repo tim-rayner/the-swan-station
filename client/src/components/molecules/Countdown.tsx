@@ -1,28 +1,31 @@
+import { useTimer } from "../../contexts/TimerContext";
 import { useEffect, useState } from "react";
 
 interface CountdownProps {
-  minsRemaining: number | null;
-  secsRemaining: number | null; //for pre
+  secsRemaining: number | null;
   onCountdownEnd?: () => void;
   onMinuteTick: () => void;
 }
 
 export default function Countdown({
-  minsRemaining = null,
-  secsRemaining = null,
+  secsRemaining,
   onCountdownEnd,
   onMinuteTick,
 }: CountdownProps) {
+  const { startTime } = useTimer();
+
   const [hundreds, setHundreds] = useState(0); // Hundreds place for minutes
   const [tens, setTens] = useState(0); // Tens place for minutes
   const [ones, setOnes] = useState(0); // Ones place for minutes
   const [tenths, setTenths] = useState(0); // Tens place for seconds
   const [onesSec, setOnesSec] = useState(0); // Ones place for seconds
 
+  const [endTime, setEndTime] = useState<Date | null>(null);
+
   useEffect(() => {
     const FINAL_COUNTDOWN_THRESHOLD = 240; // 5 minutes in seconds
-    let totalTimeRemaining = minsRemaining ? minsRemaining * 60 : 0;
-    let previousMinute = Math.floor(totalTimeRemaining / 60);
+
+    let previousMinute = Math.floor(secsRemaining! / 60);
 
     const updateDigits = (timeInSeconds: number) => {
       const minutes = Math.floor(timeInSeconds / 60);
@@ -38,33 +41,44 @@ export default function Countdown({
 
       // Check if minute has changed
       if (minutes !== previousMinute) {
-        //socket.emit('minuteChanged', { minutesRemaining: minutes });
         onMinuteTick();
         previousMinute = minutes;
       }
     };
 
     const interval = setInterval(() => {
-      if (totalTimeRemaining <= 0) {
+      if (secsRemaining! <= 0) {
         clearInterval(interval);
         onCountdownEnd?.();
         return;
       }
 
-      totalTimeRemaining -= 1;
-      updateDigits(totalTimeRemaining);
+      secsRemaining! -= 1;
+      updateDigits(secsRemaining!);
     }, 1000);
 
     // Initial update
-    updateDigits(totalTimeRemaining);
+    updateDigits(secsRemaining!);
 
     return () => clearInterval(interval);
-  }, [minsRemaining, onCountdownEnd]);
+  }, [secsRemaining, onCountdownEnd]);
+
+  useEffect(() => {
+    if (startTime) {
+      //calc end time based on startTime + 109 minutes
+      const endTime = new Date(startTime!.getTime() + 109 * 60 * 1000);
+      setEndTime(endTime);
+    }
+  }, [startTime]);
 
   return (
     <>
-      <h1>Countdown</h1>
-      <h3> {secsRemaining}</h3>
+      <h1>
+        Countdown to {endTime?.toLocaleTimeString()} || started:
+        {startTime?.toLocaleTimeString()}
+        seconds remaining: {secsRemaining}
+      </h1>
+
       <div className="flip-clock">
         {/* Three digits for minutes */}
         <FlipCard digit={hundreds} />
