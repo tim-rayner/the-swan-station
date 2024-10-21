@@ -1,5 +1,7 @@
+import { Hieroglphic } from "../../types/countdown-enums";
 import { useTimer } from "../../contexts/TimerContext";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, ReactNode } from "react";
+import Glyph from "../atoms/glyphs/Glyph";
 
 interface CountdownProps {
   secsRemaining: number | null;
@@ -87,13 +89,29 @@ export default function Countdown({
     <>
       <div className="flip-clock bg-brown w-fit p-4 rounded-lg flex items-center justify-center">
         {/* Three digits for minutes */}
-        <FlipCard digit={hundreds} />
-        <FlipCard digit={tens} />
-        <FlipCard digit={ones} />
+        <FlipCard
+          digit={hundreds}
+          hieroglyph={Hieroglphic.REED_LEAF}
+          incident
+        />
+        <FlipCard digit={tens} hieroglyph={Hieroglphic.CURLED_STAFF} incident />
+        <FlipCard digit={ones} hieroglyph={Hieroglphic.FEATHER} incident />
         <span>:</span>
         {/* Two digits for seconds */}
-        <FlipCard digit={tenths} isFinalCountdown={isFinalCountdown} />
-        <FlipCard digit={onesSec} isFinalCountdown={isFinalCountdown} />
+        <FlipCard
+          digit={tenths}
+          isFinalCountdown={isFinalCountdown}
+          hieroglyph={Hieroglphic.VULTURE}
+          incident
+          red
+        />
+        <FlipCard
+          digit={onesSec}
+          isFinalCountdown={isFinalCountdown}
+          hieroglyph={Hieroglphic.ARM}
+          incident
+          red
+        />
       </div>
 
       {/* Hidden - needed for dev */}
@@ -106,9 +124,15 @@ export default function Countdown({
 function FlipCard({
   digit,
   isFinalCountdown,
+  hieroglyph,
+  incident = false,
+  red = false,
 }: {
   digit: number;
   isFinalCountdown?: boolean;
+  hieroglyph: Hieroglphic;
+  incident?: boolean;
+  red?: boolean;
 }) {
   const [previousDigit, setPreviousDigit] = useState(digit);
   const [isFlipping, setIsFlipping] = useState(false);
@@ -131,19 +155,19 @@ function FlipCard({
             isFlipping ? "flipping" : ""
           }  relative w-[50px] h-[80px] `}
         >
-          {/* Front face shows the previous digit */}
+          {/* Front face shows the previous digit or glyph */}
           <div
             className={`flip-card-front ${
               isFinalCountdown ? "final-countdown" : ""
-            } `}
+            } ${red ? "!bg-[#d44443] !text-black" : ""} `}
           >
-            {previousDigit}
+            {incident ? <Glyph hieroglyph={hieroglyph} /> : previousDigit}
           </div>
           {/* Back face shows the new digit */}
           <div
             className={`flip-card-back ${
               isFinalCountdown ? "final-countdown" : ""
-            }`}
+            } ${red ? "!bg-[#d44443]" : ""}`}
           >
             {digit}
           </div>
