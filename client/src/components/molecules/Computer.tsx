@@ -1,9 +1,11 @@
 export default function Computer({ children }: { children: React.ReactNode }) {
   return (
-    <div className="computer">
+    <div className="computer mx-auto">
       <div className="computer-inner">
-        <div className="screen">{children}</div>
-        <div className="side-pane">
+        <div className="screen w-[90%] md:w-[75%] mx-auto md:m-[25px] md:mr-0">
+          {children}
+        </div>
+        <div className="side-pane hidden md:flex">
           <div className="stats">
             <div>
               <p>Last Reset By:</p>

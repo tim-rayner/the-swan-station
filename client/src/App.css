@@ -117,11 +117,10 @@
 }
 .screen {
   background: #031e11;
-  width: 75%;
   height: 80%;
   border-radius: 4% / 50%;
   position: relative;
-  margin: 25px 0 25px 25px;
+
   box-shadow: inset 0 0 15px #111;
   overflow: hidden;
 }
@@ -176,7 +175,6 @@
   height: 85%;
   width: 25%;
   margin: 0 15px;
-  display: flex;
   flex-direction: column;
 }
 .stats {

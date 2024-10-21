@@ -117,7 +117,7 @@ function App() {
 
   return (
     <div className="App">
-      <div className="swan-wrapper items-center content-center flex flex-col">
+      <div className="swan-wrapper flex flex-col items-center content-center">
         <img
           src={dharmaLogo}
           className="my-4 md:my-8"
@@ -141,7 +141,7 @@ function App() {
           </div>
         </Computer>
 
-        <div className="flex flex-col my-4">
+        <div className="flex flex-col my-4 border ">
           <h3> Location: The Island </h3>
           <h3> Country Code: N/A</h3>
         </div>
